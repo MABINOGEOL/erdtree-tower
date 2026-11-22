@@ -93,7 +93,11 @@ while ($true) {
         $exe = Join-Path $GameDirectory 'eldenring.exe'
         if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Select the Game folder containing eldenring.exe.' }
         $GameDirectory = (Resolve-Path -LiteralPath $GameDirectory).Path
-        if ((Get-FileHash -LiteralPath $exe).Hash -ne 'F9118FEA2CFD8FA3901E8060BFADB1552CB2471771DED8A5B662C4E298FFB328') { throw "Game version mismatch. Select the inspected executable 2.7.2.0 build. Current file version: $((Get-Item -LiteralPath $exe).VersionInfo.FileVersion)" }
+        $supportedExeHashes = @(
+            'F9118FEA2CFD8FA3901E8060BFADB1552CB2471771DED8A5B662C4E298FFB328',
+            '13315122F0E72D2D71B5666E723014DB0F37CDBC3AC8BBDAAE8D34F31D6B6376'
+        )
+        if ($supportedExeHashes -notcontains (Get-FileHash -LiteralPath $exe).Hash) { throw "Game version mismatch. Select the inspected executable 2.7.2.0 / 2.7.2.1 build. Current file version: $((Get-Item -LiteralPath $exe).VersionInfo.FileVersion)" }
         break
     } catch {
         if ($CheckOnly) { throw }

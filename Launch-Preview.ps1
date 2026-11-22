@@ -5,12 +5,17 @@ if(!(Test-Path -LiteralPath $loaderSupport)){$loaderSupport=Join-Path $PSScriptR
 . $loaderSupport
 $exePath = Join-Path $GameDir 'eldenring.exe'
 if (-not (Test-Path -LiteralPath $exePath -PathType Leaf)) { throw '找不到游戏，请传入 -GameDir' }
-if ((Get-Item -LiteralPath $exePath).VersionInfo.FileVersion -ne '2.7.2.0') { throw '验证包仅支持游戏文件版本 2.7.2.0' }
+$supportedExecutables = @{
+    '2.7.2.0' = 'f9118fea2cfd8fa3901e8060bfadb1552cb2471771ded8a5b662c4e298ffb328'
+    '2.7.2.1' = '13315122f0e72d2d71b5666e723014db0f37cdbc3ac8bbdaae8d34f31d6b6376'
+}
+$exeVersion = (Get-Item -LiteralPath $exePath).VersionInfo.FileVersion
+if (-not $supportedExecutables.ContainsKey($exeVersion)) { throw '验证包仅支持游戏文件版本 2.7.2.0 / 2.7.2.1' }
 $sha256 = [System.Security.Cryptography.SHA256]::Create()
 $exeStream = [System.IO.File]::OpenRead($exePath)
 try { $exeHash = [System.BitConverter]::ToString($sha256.ComputeHash($exeStream)).Replace('-', '').ToLowerInvariant() }
 finally { $exeStream.Dispose(); $sha256.Dispose() }
-if ($exeHash -ne 'f9118fea2cfd8fa3901e8060bfadb1552cb2471771ded8a5b662c4e298ffb328') {
+if ($exeHash -ne $supportedExecutables[$exeVersion]) {
     throw '游戏文件与已核实的版本不匹配'
 }
 function Get-NativeDllName([string]$Root) {

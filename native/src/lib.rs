@@ -12,7 +12,7 @@ use eldenring::{
     util::system::wait_for_system_init,
 };
 use erdtree_tower::{Class, Phase, Run, options::Hotkey};
-use fromsoftware_shared::{GameVersion, LANG_ID_EN, SharedTaskImpExt, program::Program};
+use fromsoftware_shared::{GameVersion, LANG_ID_EN, LANG_ID_JP, SharedTaskImpExt, program::Program};
 use hudhook::{
     Hudhook, ImguiRenderLoop, MessageFilter, RenderContext,
     hooks::dx12::ImguiDx12Hooks,
@@ -177,12 +177,17 @@ fn log_repeating(message: impl std::fmt::Display) {
 
 enum SupportedVersion {
     Ww2720,
+    Jp2721,
 }
 
 impl GameVersion for SupportedVersion {
     const NAME: &'static str = "elden ring";
     fn from_lang_version(lang: u16, version: &str) -> Option<Self> {
-        (lang == LANG_ID_EN && version == "2.7.2.0").then_some(Self::Ww2720)
+        match (lang, version) {
+            (LANG_ID_EN, "2.7.2.0") => Some(Self::Ww2720),
+            (LANG_ID_JP, "2.7.2.1") => Some(Self::Jp2721),
+            _ => None,
+        }
     }
 }
 
@@ -707,7 +712,9 @@ mod tests {
     #[test]
     fn unknown_versions_are_rejected() {
         assert!(SupportedVersion::from_lang_version(LANG_ID_EN, "2.7.2.0").is_some());
+        assert!(SupportedVersion::from_lang_version(LANG_ID_JP, "2.7.2.1").is_some());
         assert!(SupportedVersion::from_lang_version(LANG_ID_EN, "2.7.1.0").is_none());
+        assert!(SupportedVersion::from_lang_version(LANG_ID_JP, "2.7.2.0").is_none());
         assert!(SupportedVersion::from_lang_version(0x11, "2.7.1.0").is_none());
     }
 }

@@ -5,6 +5,7 @@ use windows::core::PCSTR;
 
 mod bundle;
 mod rva_jp;
+mod rva_jp_2721;
 mod rva_ww;
 mod rva_ww_2720;
 
@@ -18,6 +19,7 @@ enum ERGameVersion {
     Ww2710,
     Ww2720,
     Jp2701,
+    Jp2721,
 }
 
 impl GameVersion for ERGameVersion {
@@ -29,6 +31,7 @@ impl GameVersion for ERGameVersion {
             (LANG_ID_EN, "2.7.1.0") => Some(Self::Ww2710),
             (LANG_ID_EN, "2.7.2.0") => Some(Self::Ww2720),
             (LANG_ID_JP, "2.7.0.1") => Some(Self::Jp2701),
+            (LANG_ID_JP, "2.7.2.1") => Some(Self::Jp2721),
             _ => None,
         }
     }
@@ -50,6 +53,7 @@ impl ERGameVersion {
             },
             Self::Ww2720 => rva_ww_2720::RVAS,
             Self::Jp2701 => rva_jp::RVAS,
+            Self::Jp2721 => rva_jp_2721::RVAS,
         }
     }
 }
@@ -85,6 +89,10 @@ mod tests {
         assert_eq!(newest.rvas().register_task, 0xeb5540);
         assert_eq!(newest.rvas().game_data_man, 0x3d64fb8);
         assert_eq!(newest.rvas().cs_phys_world_cast_ray, 0xc722c0);
+        let jp_newest = ERGameVersion::from_lang_version(LANG_ID_JP, "2.7.2.1").unwrap();
+        assert_eq!(jp_newest.rvas().register_task, 0xeb5540);
+        assert_eq!(jp_newest.rvas().game_data_man, 0x3d64fb8);
+        assert_eq!(jp_newest.rvas().cs_ez_state_talk_env_vmt, 0x2c05008);
         assert!(ERGameVersion::from_lang_version(LANG_ID_EN, "2.7.3.0").is_none());
         assert!(ERGameVersion::from_lang_version(LANG_ID_JP, "2.7.1.0").is_none());
     }
