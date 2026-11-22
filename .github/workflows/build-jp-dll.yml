@@ -1,0 +1,40 @@
+name: Build JP 2.7.2.1 Native DLL
+
+on:
+  push:
+    branches: [ "build/jp-2721-ci" ]
+  workflow_dispatch:
+
+jobs:
+  build-dll:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run eldenring RVA & native tests
+        env:
+          TOWER_PRODUCT_VERSION: "2.4.0"
+        run: |
+          cargo test --locked --release --manifest-path native/Cargo.toml -p eldenring
+          cargo test --locked --release --manifest-path native/Cargo.toml
+
+      - name: Build native DLL
+        env:
+          TOWER_PRODUCT_VERSION: "2.4.0"
+        run: |
+          cargo build --locked --release --manifest-path native/Cargo.toml
+          New-Item -ItemType Directory -Path out -Force | Out-Null
+          Copy-Item -LiteralPath native/target/release/erdtree_tower_preview.dll -Destination out/erdtree_tower_preview_v130.dll -Force
+          Get-FileHash -LiteralPath out/erdtree_tower_preview_v130.dll -Algorithm SHA256
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: erdtree-tower-jp-2721-dll
+          path: out/erdtree_tower_preview_v130.dll
